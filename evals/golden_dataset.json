@@ -1,0 +1,10 @@
+[
+  {
+    "question": "What is LangGraph used for?",
+    "ground_truth": "LangGraph models agent workflows as cyclical state graphs with nodes and edges."
+  },
+  {
+    "question": "How does Corrective RAG handle irrelevant retrieved documents?",
+    "ground_truth": "It evaluates retrieval relevance and rewrites the query if context is missing."
+  }
+]
