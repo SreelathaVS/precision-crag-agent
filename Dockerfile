@@ -16,9 +16,10 @@ COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 RUN pip install --no-cache-dir langchain-groq fastembed uvicorn
 
-# Copy application source and evals
+# Copy application source, evals, and frontend static assets
 COPY src/ ./src/
 COPY evals/ ./evals/
+COPY static/ ./static/
 
 EXPOSE 8000
 
