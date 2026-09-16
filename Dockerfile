@@ -1,14 +1,24 @@
 FROM python:3.11-slim
 
-WORKDIR /app
-
 ENV PYTHONUNBUFFERED=1 \
     PYTHONDONTWRITEBYTECODE=1
 
+WORKDIR /app
+
+# Install system utilities
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    build-essential \
+    curl \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install python requirements
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install --no-cache-dir langchain-groq fastembed uvicorn
 
-COPY . .
+# Copy application source and evals
+COPY src/ ./src/
+COPY evals/ ./evals/
 
 EXPOSE 8000
 
