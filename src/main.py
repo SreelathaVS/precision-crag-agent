@@ -1,8 +1,11 @@
 from fastapi import FastAPI, HTTPException
+from fastapi.responses import RedirectResponse  # <--- Add this import
 from pydantic import BaseModel, Field
 from src.agent import crag_agent
 
-app = FastAPI(title="Autonomous CRAG Inference API", version="1.0.0")
+app = FastAPI(title="Precision CRAG Agent",
+    description="Corrective Retrieval-Augmented Generation Agent API",
+    version="1.0.0")
 
 
 class QueryRequest(BaseModel):
@@ -14,7 +17,9 @@ class QueryResponse(BaseModel):
   retrieved_chunks: int
   query_used: str
 
-
+@app.get("/", include_in_schema=False)
+def root():
+    return RedirectResponse(url="/docs")
 @app.get("/health")
 def health_check():
   return {"status": "healthy"}
