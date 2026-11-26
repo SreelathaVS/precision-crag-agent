@@ -133,7 +133,8 @@
       <div>
         <h1>Precision CRAG Agent</h1>
         <p class="subtitle">
-          Ask questions against the knowledge graph with autonomous correction.
+          Ask about CRAG, LangGraph, FastAPI, or AI evaluations. The assistant
+          searches four short notes for relevant information.
         </p>
         <p>What is the difference between standard RAG and Corrective RAG?</p>
         <p class="example-hint">
@@ -218,8 +219,8 @@
           const data = await res.json();
 
           answerOutput.innerText = data.answer;
-          metaChunks.innerText = `Retrieved Chunks: ${data.retrieved_chunks ?? 0}`;
-          metaQuery.innerText = `Query: ${data.query_used ?? question}`;
+          metaChunks.innerText = `Retrieved Chunks (Passages kept after relevance check): ${data.retrieved_chunks ?? 0}`;
+          metaQuery.innerText = `Query (Final search query): ${data.query_used ?? question}`;
         } catch (err) {
           answerOutput.innerText =
             "Failed to fetch response. Please try again.";

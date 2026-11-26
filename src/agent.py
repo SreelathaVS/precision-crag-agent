@@ -13,35 +13,48 @@ class AgentState(TypedDict):
     generation: str
     documents: List[str]
     loop_count: int
+    search_query: str
 
 llm = ChatGroq(model="openai/gpt-oss-20b", temperature=0)
 retriever = get_default_retriever()
 
 def retrieve(state: AgentState):
-    docs = retriever.invoke(state["question"])
+    query = state.get("search_query") or state["question"]
+    docs = retriever.invoke(query)
     return {"documents": [d.page_content for d in docs], "loop_count": state.get("loop_count", 0)}
 
 def grade_documents(state: AgentState):
     prompt = ChatPromptTemplate.from_template(
-        "Document: {doc}\nQuestion: {question}\nIs this document relevant to the question? Answer strictly 'yes' or 'no'."
+        "Question: {question}\nPassage: {doc}\n"
+        "Does this passage contain information that helps answer this specific "
+        "question? Reply with exactly yes or no."
     )
     chain = prompt | llm
     valid_docs = []
     for doc in state["documents"]:
         res = chain.invoke({"doc": doc, "question": state["question"]}).content
-        if "yes" in res.lower():
+        if res.strip().lower() == "yes":
             valid_docs.append(doc)
     return {"documents": valid_docs}
 
 def rewrite_query(state: AgentState):
     prompt = ChatPromptTemplate.from_template(
-        "The query '{question}' retrieved poor documents. Provide a revised, single-sentence retrieval query:"
+        "Original question: {question}\n"
+        "Previous search: {previous}\n"
+        "Rephrase the original question for retrieval. Preserve its meaning. "
+        "Do not add dates or assumptions. Return only the query text."
     )
+    previous = state.get("search_query") or state["question"]
     chain = prompt | llm
-    new_query = chain.invoke({"question": state["question"]}).content.strip()
-    return {"question": new_query, "loop_count": state["loop_count"] + 1}
+    reply = chain.invoke({"question": state["question"], "previous": previous})
+    return {
+        "search_query": reply.content.strip() or previous,
+        "loop_count": state["loop_count"] + 1,
+    }
 
 def generate(state: AgentState):
+    if not state["documents"]:
+        return {"generation": "I couldn't find enough information in the knowledge base to answer that question."}
     context = "\n".join(state["documents"])
     prompt = ChatPromptTemplate.from_template(
         "Context:\n{context}\n\nQuestion: {question}\nGenerate a concise, factual answer strictly grounded on the context:"

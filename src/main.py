@@ -47,7 +47,7 @@ def run_query(payload: QueryRequest):
         return QueryResponse(
             answer=result["generation"],
             retrieved_chunks=len(result.get("documents", [])),
-            query_used=result.get("question", payload.question),
+            query_used=result.get("search_query") or payload.question,
         )
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
